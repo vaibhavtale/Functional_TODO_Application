@@ -13,9 +13,20 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final todosList = ToDo.todoList();
+  List<ToDo> _foundToDO = [];
+  final _todocontroller = TextEditingController();
+
+  @override
+
+  void initState() {
+    // TODO: implement initState
+    _foundToDO = todosList;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       backgroundColor: tdBGColor,
       appBar: _buildAppBar(),
@@ -31,6 +42,7 @@ class _HomePageState extends State<HomePage> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: TextField(
+                    onChanged: (Value) => _runFilter(Value),
                     decoration: InputDecoration(
                         // contentPadding: EdgeInsets.all(0),
                         prefixIcon: Icon(
@@ -55,9 +67,9 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                         ),
-                        for (ToDo tobe in todosList)
+                       for (ToDo task in _foundToDO.reversed)
                           ToDoItem(
-                            todo: tobe,
+                            todo: task,
                             onToDoChanged: _handleToDoChange,
                             onDeleteItem: _deleteToDoItem,
                           ),
@@ -88,6 +100,7 @@ class _HomePageState extends State<HomePage> {
                       borderRadius: BorderRadius.circular(10)
                     ),
                     child: TextField(
+                      controller: _todocontroller,
                       decoration: InputDecoration(
                         hintText: "Add New TODO Item..",
                         border: InputBorder.none
@@ -99,7 +112,9 @@ class _HomePageState extends State<HomePage> {
 
                   margin: EdgeInsets.only(bottom: 20, right: 20),
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      _addToDoItem(_todocontroller.text);
+                    },
                     child: Text("+", style: TextStyle(fontSize: 40),),
                     style: ElevatedButton.styleFrom(
                       primary: Colors.pinkAccent,
@@ -153,5 +168,30 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       todosList.removeWhere((item) => item.id == id);
     });
+  }
+
+  void _runFilter(String enteredKeyword){
+
+    List<ToDo> results = [];
+
+    if(enteredKeyword.isEmpty){
+
+      results = todosList;
+    }
+    else{
+      results = todosList.where((item) => item.todo_text!.toLowerCase().contains(enteredKeyword.toLowerCase())).toList();
+    }
+
+    setState(() {
+      _foundToDO = results;
+    });
+  }
+
+  void _addToDoItem(String toDo){
+
+    setState(() {
+      todosList.add(ToDo(id: DateTime.now().millisecondsSinceEpoch.toString(), todo_text: toDo));
+    });
+    _todocontroller.clear();
   }
 }
